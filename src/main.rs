@@ -24,7 +24,7 @@ fn main()
         true
     });
     w.draw(&mut TestRenderer(io::stdout()));
-    //println!("{:?}", w);
+    println!("{:?}", w);
     w.push_events(&rtk::data::Event::MouseButton(1, true));
     w.pull_events();
 }

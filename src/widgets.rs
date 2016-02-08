@@ -1,14 +1,19 @@
+use std::fmt;
 use traits::*;
 use data::{Event, Property, EventCallback};
 use utils;
 
-//#[derive(Debug)]
 pub struct Label
 {
     label: Property<String>,
     size: Property<(u32, u32)>,
     ev_handler: EventCallback<Label>,
     child: Option<Box<Containable>>,
+}
+
+impl fmt::Debug for Label
+{
+    debug_fmt!(Label, label, size);
 }
 
 impl Label
