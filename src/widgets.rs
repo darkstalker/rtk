@@ -11,11 +11,6 @@ pub struct Label
     child: Option<Box<Containable>>,
 }
 
-impl fmt::Debug for Label
-{
-    debug_fmt!(Label, label, size);
-}
-
 impl Label
 {
     pub fn new(text: &str) -> Label
@@ -28,6 +23,12 @@ impl Label
         }
     }
 }
+
+impl fmt::Debug for Label
+{
+    debug_fmt!(Label, label, size);
+}
+
 
 impl Containable for Label {}
 
