@@ -27,6 +27,8 @@ pub trait Containable: PushEvents + CanDraw {}
 pub trait Container
 {
     fn get_children(&self) -> &[Box<Containable>];
+    fn add<T>(&mut self, obj: T)
+        where T: Containable + 'static, Self: Sized;
 }
 
 pub trait HasEvents where Self: Sized

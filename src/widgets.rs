@@ -29,11 +29,19 @@ impl Label
     }
 }
 
+impl Containable for Label {}
+
 impl Container for Label
 {
     fn get_children(&self) -> &[Box<Containable>]
     {
         utils::option_as_slice(&self.child)
+    }
+
+    fn add<T>(&mut self, obj: T)
+        where T: Containable + 'static
+    {
+        self.child = Some(Box::new(obj))
     }
 }
 
