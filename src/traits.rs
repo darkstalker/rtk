@@ -1,4 +1,4 @@
-use data::{Event, EventCallback};
+use data::Event;
 
 pub trait HasLabel
 {
@@ -10,6 +10,12 @@ pub trait HasSize
 {
     fn get_size(&self) -> (u32, u32);
     fn set_size(&mut self, width: u32, height: u32);
+}
+
+pub trait HasEvents
+{
+    fn on_event<F>(&mut self, handler: F)
+        where F: Fn(&Self, &Event) -> bool + 'static;
 }
 
 pub trait DrawContext
@@ -30,17 +36,6 @@ pub trait Container
     fn get_children_mut(&mut self) -> &mut [Box<Containable>];
     fn add<T>(&mut self, obj: T)
         where T: Containable + 'static, Self: Sized;
-}
-
-pub trait HasEvents where Self: Sized
-{
-    fn set_ev_handler(&mut self, cb: EventCallback<Self>);
-
-    fn on_event<F>(&mut self, handler: F)
-        where F: Fn(&Self, &Event) -> bool + 'static
-    {
-        self.set_ev_handler(EventCallback::new(handler));
-    }
 }
 
 pub trait PushEvents: Container

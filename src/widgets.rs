@@ -50,14 +50,6 @@ impl Container for Label
     }
 }
 
-impl HasEvents for Label
-{
-    fn set_ev_handler(&mut self, cb: EventCallback<Self>)
-    {
-        self.ev_handler = cb;
-    }
-}
-
 impl PushEvents for Label
 {
     fn push_event_local(&self, event: &Event) -> bool
@@ -105,6 +97,15 @@ impl HasSize for Label
     fn set_size(&mut self, width: u32, height: u32)
     {
         self.size.set((width, height))
+    }
+}
+
+impl HasEvents for Label
+{
+    fn on_event<F>(&mut self, handler: F)
+        where F: Fn(&Self, &Event) -> bool + 'static
+    {
+        self.ev_handler = EventCallback::new(handler);
     }
 }
 

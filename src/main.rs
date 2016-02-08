@@ -17,12 +17,13 @@ impl DrawContext for TestRenderer
 
 fn main()
 {
-    let mut w = Label::new("a");
     let mut w2 = Label::new("b");
     w2.on_event(|_, ev| {
         println!("event2: {:?}", ev);
         true
     });
+
+    let mut w = Label::new("a");
     w.add(w2);
     w.set_label("waffle");
     w.set_size(320, 240);
@@ -30,8 +31,9 @@ fn main()
         println!("event1: {:?}", ev);
         true
     });
-    w.draw(&mut TestRenderer(io::stdout()));
+
     println!("{:?}", w);
+    w.draw(&mut TestRenderer(io::stdout()));
     w.push_event(&Event::MouseButton(1, true));
     w.pull_events();
 }
