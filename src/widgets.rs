@@ -44,7 +44,7 @@ impl PushEvents for Label
 {
     fn push_local_events(&self, event: &Event) -> bool
     {
-        self.ev_handler.call(self, event)
+        (self.ev_handler)(self, event)
     }
 }
 
@@ -54,12 +54,12 @@ impl PullEvents for Label
     {
         if self.label.consume_event()
         {
-            self.ev_handler.call(self, &Event::LabelChanged(self.label.get()));
+            (self.ev_handler)(self, &Event::LabelChanged(self.label.get()));
         }
         if self.size.consume_event()
         {
             let (w, h) = *self.size.get();
-            self.ev_handler.call(self, &Event::Resized(w, h));
+            (self.ev_handler)(self, &Event::Resized(w, h));
         }
     }
 }

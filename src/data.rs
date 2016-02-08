@@ -24,11 +24,13 @@ impl<T> Property<T>
         Property{ value: val, changed: false }
     }
 
+    #[inline]
     pub fn get(&self) -> &T
     {
         &self.value
     }
 
+    #[inline]
     pub fn set(&mut self, val: T)
     {
         self.value = val;
@@ -50,6 +52,7 @@ impl<T> Deref for Property<T>
 {
     type Target = T;
 
+    #[inline]
     fn deref(&self) -> &Self::Target
     {
         self.get()
@@ -73,10 +76,16 @@ impl<T> EventCallback<T>
     {
         EventCallback(Box::new(f))
     }
+}
 
-    pub fn call(&self, obj: &T, ev: &Event) -> bool
+impl<T> Deref for EventCallback<T>
+{
+    type Target = Fn(&T, &Event) -> bool;
+
+    #[inline]
+    fn deref(&self) -> &Self::Target
     {
-        (self.0)(obj, ev)
+        &*self.0
     }
 }
 
