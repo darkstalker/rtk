@@ -29,7 +29,6 @@ impl fmt::Debug for Label
     debug_fmt!(Label, label, size);
 }
 
-
 impl Containable for Label {}
 
 impl Container for Label
@@ -37,6 +36,11 @@ impl Container for Label
     fn get_children(&self) -> &[Box<Containable>]
     {
         utils::option_as_slice(&self.child)
+    }
+
+    fn get_children_mut(&mut self) -> &mut [Box<Containable>]
+    {
+        utils::option_as_slice_mut(&mut self.child)
     }
 
     fn add<T>(&mut self, obj: T)
@@ -56,7 +60,7 @@ impl HasEvents for Label
 
 impl PushEvents for Label
 {
-    fn push_local_events(&self, event: &Event) -> bool
+    fn push_event_local(&self, event: &Event) -> bool
     {
         (self.ev_handler)(self, event)
     }
@@ -64,7 +68,7 @@ impl PushEvents for Label
 
 impl PullEvents for Label
 {
-    fn pull_events(&mut self)
+    fn pull_events_local(&mut self)
     {
         if self.label.consume_event()
         {

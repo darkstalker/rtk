@@ -22,11 +22,12 @@ pub trait CanDraw
     fn draw(&self, ctx: &mut DrawContext);
 }
 
-pub trait Containable: PushEvents + CanDraw {}
+pub trait Containable: PushEvents + PullEvents + CanDraw {}
 
 pub trait Container
 {
     fn get_children(&self) -> &[Box<Containable>];
+    fn get_children_mut(&mut self) -> &mut [Box<Containable>];
     fn add<T>(&mut self, obj: T)
         where T: Containable + 'static, Self: Sized;
 }
@@ -44,20 +45,29 @@ pub trait HasEvents where Self: Sized
 
 pub trait PushEvents: Container
 {
-    fn push_local_events(&self, event: &Event) -> bool;
+    fn push_event_local(&self, event: &Event) -> bool;
 
-    fn push_events(&self, event: &Event) -> bool
+    fn push_event(&self, event: &Event) -> bool
     {
-        if self.get_children().iter().map(|c| c.push_events(event)).any(|a| a)
+        if self.get_children().iter().map(|c| c.push_event(event)).any(|a| a)
         {
             return true
         }
 
-        self.push_local_events(event)
+        self.push_event_local(event)
     }
 }
 
-pub trait PullEvents
+pub trait PullEvents: Container
 {
-    fn pull_events(&mut self);
+    fn pull_events_local(&mut self);
+
+    fn pull_events(&mut self)
+    {
+        self.pull_events_local();
+        for c in self.get_children_mut()
+        {
+            c.pull_events();
+        }
+    }
 }
