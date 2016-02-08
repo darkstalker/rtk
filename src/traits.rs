@@ -19,13 +19,14 @@ pub trait DrawContext
 
 pub trait CanDraw
 {
-    fn draw<T: DrawContext>(&self, ctx: T);
+    fn draw(&self, ctx: &mut DrawContext);
 }
 
-pub trait PropChanged
+pub trait Containable: PushEvents + CanDraw {}
+
+pub trait Container
 {
-    fn is_changed(&self) -> bool;
-    fn reset_changed(&mut self);
+    fn get_children(&self) -> &[Box<Containable>];
 }
 
 pub trait HasEvents where Self: Sized
@@ -39,14 +40,13 @@ pub trait HasEvents where Self: Sized
     }
 }
 
-pub trait PushEvents
+pub trait PushEvents: Container
 {
-    fn get_nested_push_handlers<'a>(&'a self) -> Box<Iterator<Item=&'a Box<PushEvents>> + 'a>;
     fn push_local_events(&self, event: &Event) -> bool;
 
     fn push_events(&self, event: &Event) -> bool
     {
-        if self.get_nested_push_handlers().map(|c| c.push_events(event)).any(|a| a)
+        if self.get_children().iter().map(|c| c.push_events(event)).any(|a| a)
         {
             return true
         }

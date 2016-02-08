@@ -16,14 +16,14 @@ impl DrawContext for TestRenderer
 
 fn main()
 {
-    let mut w = Label::new("waff");
-    //w.set_label("waff");
+    let mut w = Label::new("a");
+    w.set_label("waffle");
     w.set_size(320, 240);
     w.on_event(|_, ev| {
         println!("event: {:?}", ev);
         true
     });
-    w.draw(TestRenderer(io::stdout()));
+    w.draw(&mut TestRenderer(io::stdout()));
     //println!("{:?}", w);
     w.push_events(&rtk::data::Event::MouseButton(1, true));
     w.pull_events();

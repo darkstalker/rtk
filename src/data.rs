@@ -1,14 +1,13 @@
 use std::ops::Deref;
-use traits::PropChanged;
 
 #[derive(Debug)]
-pub enum Event
+pub enum Event<'a>
 {
     // push events
     MouseButton(u8, bool),
     // pull events
-    LabelChanged,
-    Resized,
+    LabelChanged(&'a str),
+    Resized(u32, u32),
 }
 
 #[derive(Debug)]
@@ -35,18 +34,15 @@ impl<T> Property<T>
         self.value = val;
         self.changed = true;
     }
-}
 
-impl<T> PropChanged for Property<T>
-{
-    fn is_changed(&self) -> bool
+    pub fn consume_event(&mut self) -> bool
     {
-        self.changed
-    }
-
-    fn reset_changed(&mut self)
-    {
-        self.changed = false;
+        if self.changed
+        {
+            self.changed = false;
+            return true;
+        }
+        false
     }
 }
 

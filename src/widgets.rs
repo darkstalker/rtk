@@ -1,13 +1,14 @@
 use traits::*;
 use data::{Event, Property, EventCallback};
+use utils;
 
 //#[derive(Debug)]
 pub struct Label
 {
-    pub label: Property<String>,
-    pub size: Property<(u32, u32)>,
+    label: Property<String>,
+    size: Property<(u32, u32)>,
     ev_handler: EventCallback<Label>,
-    child: Option<Box<PushEvents>>,
+    child: Option<Box<Containable>>,
 }
 
 impl Label
@@ -23,6 +24,14 @@ impl Label
     }
 }
 
+impl Container for Label
+{
+    fn get_children(&self) -> &[Box<Containable>]
+    {
+        utils::option_as_slice(&self.child)
+    }
+}
+
 impl HasEvents for Label
 {
     fn set_ev_handler(&mut self, cb: EventCallback<Self>)
@@ -33,11 +42,6 @@ impl HasEvents for Label
 
 impl PushEvents for Label
 {
-    fn get_nested_push_handlers<'a>(&'a self) -> Box<Iterator<Item=&'a Box<PushEvents>> + 'a>
-    {
-        Box::new(self.child.iter())
-    }
-
     fn push_local_events(&self, event: &Event) -> bool
     {
         self.ev_handler.call(self, event)
@@ -48,15 +52,14 @@ impl PullEvents for Label
 {
     fn pull_events(&mut self)
     {
-        if self.label.is_changed()
+        if self.label.consume_event()
         {
-            self.label.reset_changed();
-            self.ev_handler.call(self, &Event::LabelChanged);
+            self.ev_handler.call(self, &Event::LabelChanged(self.label.get()));
         }
-        if self.size.is_changed()
+        if self.size.consume_event()
         {
-            self.label.reset_changed();
-            self.ev_handler.call(self, &Event::Resized);
+            let (w, h) = *self.size.get();
+            self.ev_handler.call(self, &Event::Resized(w, h));
         }
     }
 }
@@ -89,8 +92,13 @@ impl HasSize for Label
 
 impl CanDraw for Label
 {
-    fn draw<T: DrawContext>(&self, mut ctx: T)
+    fn draw(&self, ctx: &mut DrawContext)
     {
         ctx.draw_text(&self.label);
+
+        if let Some(ref child) = self.child
+        {
+            child.draw(ctx)
+        }
     }
 }
