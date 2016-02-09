@@ -1,4 +1,4 @@
-use data::Event;
+use data::{Event, PushEvent};
 
 pub trait HasLabel
 {
@@ -40,9 +40,9 @@ pub trait Container
 
 pub trait PushEvents: Container
 {
-    fn push_event_local(&self, event: Event) -> bool;
+    fn push_event_local(&self, event: PushEvent) -> bool;
 
-    fn push_event(&self, event: Event) -> bool
+    fn push_event(&self, event: PushEvent) -> bool
     {
         if self.get_children().iter().map(|c| c.push_event(event)).any(|a| a)
         {

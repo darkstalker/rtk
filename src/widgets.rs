@@ -1,6 +1,6 @@
 use std::fmt;
 use traits::*;
-use data::{Event, Property, EventCallback};
+use data::{Event, PushEvent, Property, EventCallback};
 use utils;
 
 pub struct Label
@@ -52,9 +52,9 @@ impl Container for Label
 
 impl PushEvents for Label
 {
-    fn push_event_local(&self, event: Event) -> bool
+    fn push_event_local(&self, event: PushEvent) -> bool
     {
-        (self.ev_handler)(self, event)
+        (self.ev_handler)(self, event.into())
     }
 }
 

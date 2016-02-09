@@ -10,6 +10,22 @@ pub enum Event<'a>
     Resized(u32, u32),
 }
 
+#[derive(Debug, Clone, Copy)]
+pub enum PushEvent
+{
+    MouseButton(u8, bool),
+}
+
+impl<'a> Into<Event<'a>> for PushEvent
+{
+    fn into(self) -> Event<'a>
+    {
+        match self {
+            PushEvent::MouseButton(b, p) => Event::MouseButton(b, p),
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct Property<T>
 {
