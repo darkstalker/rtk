@@ -15,7 +15,7 @@ pub trait HasSize
 pub trait HasEvents
 {
     fn on_event<F>(&mut self, handler: F)
-        where F: Fn(&Self, &Event) -> bool + 'static;
+        where F: Fn(&Self, Event) -> bool + 'static;
 }
 
 pub trait DrawContext
@@ -40,9 +40,9 @@ pub trait Container
 
 pub trait PushEvents: Container
 {
-    fn push_event_local(&self, event: &Event) -> bool;
+    fn push_event_local(&self, event: Event) -> bool;
 
-    fn push_event(&self, event: &Event) -> bool
+    fn push_event(&self, event: Event) -> bool
     {
         if self.get_children().iter().map(|c| c.push_event(event)).any(|a| a)
         {

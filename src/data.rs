@@ -1,6 +1,6 @@
 use std::ops::Deref;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum Event<'a>
 {
     // push events
@@ -10,7 +10,7 @@ pub enum Event<'a>
     Resized(u32, u32),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Property<T>
 {
     value: T,
@@ -67,12 +67,12 @@ impl<T> Default for Property<T> where T: Default
     }
 }
 
-pub struct EventCallback<T>(Box<Fn(&T, &Event) -> bool>);
+pub struct EventCallback<T>(Box<Fn(&T, Event) -> bool>);
 
 impl<T> EventCallback<T>
 {
     pub fn new<F>(f: F) -> EventCallback<T>
-        where F: Fn(&T, &Event) -> bool + 'static
+        where F: Fn(&T, Event) -> bool + 'static
     {
         EventCallback(Box::new(f))
     }
@@ -80,7 +80,7 @@ impl<T> EventCallback<T>
 
 impl<T> Deref for EventCallback<T>
 {
-    type Target = Fn(&T, &Event) -> bool;
+    type Target = Fn(&T, Event) -> bool;
 
     #[inline]
     fn deref(&self) -> &Self::Target

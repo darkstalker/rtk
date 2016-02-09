@@ -52,7 +52,7 @@ impl Container for Label
 
 impl PushEvents for Label
 {
-    fn push_event_local(&self, event: &Event) -> bool
+    fn push_event_local(&self, event: Event) -> bool
     {
         (self.ev_handler)(self, event)
     }
@@ -64,12 +64,12 @@ impl PullEvents for Label
     {
         if self.label.consume_event()
         {
-            (self.ev_handler)(self, &Event::LabelChanged(self.label.get()));
+            (self.ev_handler)(self, Event::LabelChanged(self.label.get()));
         }
         if self.size.consume_event()
         {
             let (w, h) = *self.size.get();
-            (self.ev_handler)(self, &Event::Resized(w, h));
+            (self.ev_handler)(self, Event::Resized(w, h));
         }
     }
 }
@@ -103,7 +103,7 @@ impl HasSize for Label
 impl HasEvents for Label
 {
     fn on_event<F>(&mut self, handler: F)
-        where F: Fn(&Self, &Event) -> bool + 'static
+        where F: Fn(&Self, Event) -> bool + 'static
     {
         self.ev_handler = EventCallback::new(handler);
     }

@@ -34,6 +34,6 @@ fn main()
 
     println!("{:?}", w);
     w.draw(&mut TestRenderer(io::stdout()));
-    w.push_event(&Event::MouseButton(1, true));
+    w.push_event(Event::MouseButton(1, true));
     w.pull_events();
 }
