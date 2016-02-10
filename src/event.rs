@@ -18,9 +18,9 @@ pub enum ExtEvent
 
 impl ExtEvent
 {
-    pub fn push<T: PushEvents + Container>(self, obj: &T) -> bool
+    pub fn push(self, obj: &Containable) -> bool
     {
-        if obj.get_children().iter().map(|c| self.push(c)).any(|a| a)
+        if obj.get_children().iter().map(|c| self.push(&**c)).any(|a| a)
         {
             return true
         }
@@ -39,11 +39,11 @@ impl<'a> Into<Event<'a>> for ExtEvent
     }
 }
 
-pub fn pull_events<T: PullEvents + Container>(obj: &mut T)
+pub fn pull_events(obj: &mut Containable)
 {
     obj.pull_events();
     for c in obj.get_children_mut()
     {
-        pull_events(c);
+        pull_events(&mut **c);
     }
 }
