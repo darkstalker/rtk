@@ -1,4 +1,4 @@
-use data::{Event, PushEvent};
+use data::{Event, ExtEvent};
 
 pub trait HasLabel
 {
@@ -38,19 +38,9 @@ pub trait Container
         where T: Containable + 'static, Self: Sized;
 }
 
-pub trait PushEvents: Container
+pub trait PushEvents
 {
-    fn push_event_local(&self, event: PushEvent) -> bool;
-
-    fn push_event(&self, event: PushEvent) -> bool
-    {
-        if self.get_children().iter().map(|c| c.push_event(event)).any(|a| a)
-        {
-            return true
-        }
-
-        self.push_event_local(event)
-    }
+    fn push_event(&self, event: ExtEvent) -> bool;
 }
 
 pub trait PullEvents: Container
@@ -64,5 +54,35 @@ pub trait PullEvents: Container
         {
             c.pull_events();
         }
+    }
+}
+
+// box adapters
+impl<'a> PushEvents for Box<Containable + 'a>
+{
+    #[inline]
+    fn push_event(&self, event: ExtEvent) -> bool
+    {
+        (**self).push_event(event)
+    }
+}
+
+impl<'a> Container for Box<Containable + 'a>
+{
+    #[inline]
+    fn get_children(&self) -> &[Box<Containable>]
+    {
+        (**self).get_children()
+    }
+
+    #[inline]
+    fn get_children_mut(&mut self) -> &mut [Box<Containable>]
+    {
+        (**self).get_children_mut()
+    }
+
+    fn add<T: Containable + 'static>(&mut self, _: T)
+    {
+        unreachable!()
     }
 }

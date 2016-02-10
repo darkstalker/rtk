@@ -1,4 +1,5 @@
 use std::ops::Deref;
+use traits::*;
 
 #[derive(Debug, Clone, Copy)]
 pub enum Event<'a>
@@ -11,17 +12,30 @@ pub enum Event<'a>
 }
 
 #[derive(Debug, Clone, Copy)]
-pub enum PushEvent
+pub enum ExtEvent
 {
     MouseButton(u8, bool),
 }
 
-impl<'a> Into<Event<'a>> for PushEvent
+impl ExtEvent
+{
+    pub fn push<T: PushEvents + Container>(self, obj: &T) -> bool
+    {
+        if obj.get_children().iter().map(|c| self.push(c)).any(|a| a)
+        {
+            return true
+        }
+
+        obj.push_event(self)
+    }
+}
+
+impl<'a> Into<Event<'a>> for ExtEvent
 {
     fn into(self) -> Event<'a>
     {
         match self {
-            PushEvent::MouseButton(b, p) => Event::MouseButton(b, p),
+            ExtEvent::MouseButton(b, p) => Event::MouseButton(b, p),
         }
     }
 }
