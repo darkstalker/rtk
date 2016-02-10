@@ -1,6 +1,7 @@
 use std::fmt;
 use traits::*;
-use data::{Event, ExtEvent, Property, EventCallback};
+use data::{Property, EventCallback};
+use event::{Event, ExtEvent};
 use utils;
 
 pub struct Label
@@ -60,7 +61,7 @@ impl PushEvents for Label
 
 impl PullEvents for Label
 {
-    fn pull_events_local(&mut self)
+    fn pull_events(&mut self)
     {
         if self.label.consume_event()
         {

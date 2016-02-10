@@ -1,7 +1,7 @@
 extern crate rtk;
 use std::io::{self, Write};
 use rtk::traits::*;
-use rtk::data::ExtEvent;
+use rtk::event::{self, ExtEvent};
 use rtk::widgets::Label;
 
 // test stuff
@@ -35,5 +35,5 @@ fn main()
     println!("{:?}", w);
     w.draw(&mut TestRenderer(io::stdout()));
     ExtEvent::MouseButton(1, true).push(&w);
-    w.pull_events();
+    event::pull_events(&mut w);
 }

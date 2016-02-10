@@ -1,4 +1,4 @@
-use data::{Event, ExtEvent};
+use event::{Event, ExtEvent};
 
 pub trait HasLabel
 {
@@ -28,7 +28,7 @@ pub trait CanDraw
     fn draw(&self, ctx: &mut DrawContext);
 }
 
-pub trait Containable: PushEvents + PullEvents + CanDraw {}
+pub trait Containable: PushEvents + PullEvents + Container + CanDraw {}
 
 pub trait Container
 {
@@ -43,27 +43,28 @@ pub trait PushEvents
     fn push_event(&self, event: ExtEvent) -> bool;
 }
 
-pub trait PullEvents: Container
+pub trait PullEvents
 {
-    fn pull_events_local(&mut self);
-
-    fn pull_events(&mut self)
-    {
-        self.pull_events_local();
-        for c in self.get_children_mut()
-        {
-            c.pull_events();
-        }
-    }
+    fn pull_events(&mut self);
 }
 
 // box adapters
+
 impl<'a> PushEvents for Box<Containable + 'a>
 {
     #[inline]
     fn push_event(&self, event: ExtEvent) -> bool
     {
         (**self).push_event(event)
+    }
+}
+
+impl<'a> PullEvents for Box<Containable + 'a>
+{
+    #[inline]
+    fn pull_events(&mut self)
+    {
+        (**self).pull_events()
     }
 }
 
