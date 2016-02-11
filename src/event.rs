@@ -16,19 +16,6 @@ pub enum ExtEvent
     MouseButton(u8, bool),
 }
 
-impl ExtEvent
-{
-    pub fn push(self, obj: &Containable) -> bool
-    {
-        if obj.get_children().iter().map(|c| self.push(&**c)).any(|a| a)
-        {
-            return true
-        }
-
-        obj.push_event(self)
-    }
-}
-
 impl<'a> Into<Event<'a>> for ExtEvent
 {
     fn into(self) -> Event<'a>
@@ -37,6 +24,16 @@ impl<'a> Into<Event<'a>> for ExtEvent
             ExtEvent::MouseButton(b, p) => Event::MouseButton(b, p),
         }
     }
+}
+
+pub fn push_event(obj: &Containable, ev: ExtEvent) -> bool
+{
+    if obj.get_children().iter().map(|c| push_event(&**c, ev)).any(|a| a)
+    {
+        return true
+    }
+
+    obj.push_event(ev)
 }
 
 pub fn pull_events(obj: &mut Containable)
