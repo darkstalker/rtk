@@ -4,3 +4,4 @@ version = "0.0.1"
 authors = ["darkstalker <slayerbeast@gmail.com>"]
 
 [dependencies]
+ref_slice = "1.0.0"

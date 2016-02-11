@@ -1,8 +1,8 @@
+extern crate ref_slice;
 use std::fmt;
 use traits::*;
 use data::{Property, EventCallback};
 use event::{Event, ExtEvent};
-use utils;
 
 pub struct Label
 {
@@ -36,12 +36,12 @@ impl Container for Label
 {
     fn get_children(&self) -> &[Box<Containable>]
     {
-        utils::option_as_slice(&self.child)
+        ref_slice::opt_slice(&self.child)
     }
 
     fn get_children_mut(&mut self) -> &mut [Box<Containable>]
     {
-        utils::option_as_slice_mut(&mut self.child)
+        ref_slice::mut_opt_slice(&mut self.child)
     }
 
     fn add<T>(&mut self, obj: T)
