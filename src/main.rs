@@ -2,7 +2,7 @@ extern crate rtk;
 use std::io::{self, Write};
 use rtk::traits::*;
 use rtk::event::{self, ExtEvent, ElementState, MouseButton};
-use rtk::widgets::Label;
+use rtk::widgets::Window;
 
 // test stuff
 struct TestRenderer(io::Stdout);
@@ -17,14 +17,15 @@ impl DrawContext for TestRenderer
 
 fn main()
 {
+    /*
     let mut w2 = Label::new("b");
     w2.on_event(|_, ev| {
         println!("event2: {:?}", ev);
         true
     });
-
-    let mut w = Label::new("a");
-    w.add(w2);
+    */
+    let mut w = Window::new("a");
+    //w.add(w2);
     w.set_label("waffle");
     w.set_size(320, 240);
     w.on_event(|_, ev| {
