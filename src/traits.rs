@@ -29,6 +29,7 @@ pub trait CanDraw
 }
 
 pub trait Containable: PushEvents + PullEvents + Container + CanDraw {}
+impl<T> Containable for T where T: PushEvents + PullEvents + Container + CanDraw {}
 
 pub trait Container
 {

@@ -30,8 +30,6 @@ impl fmt::Debug for Label
     debug_fmt!(Label, label, size);
 }
 
-impl Containable for Label {}
-
 impl Container for Label
 {
     fn get_children(&self) -> &[Box<Containable>]
