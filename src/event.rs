@@ -10,23 +10,23 @@ pub enum Event<'a>
     Resized(u32, u32),
 }
 
-#[derive(Debug, Clone, Copy)]
-pub enum ExtEvent
+impl<'a> From<&'a ExtEvent> for Event<'a>
 {
-    MouseButton(u8, bool),
-}
-
-impl<'a> Into<Event<'a>> for ExtEvent
-{
-    fn into(self) -> Event<'a>
+    fn from(ev: &ExtEvent) -> Self
     {
-        match self {
+        match *ev {
             ExtEvent::MouseButton(b, p) => Event::MouseButton(b, p),
         }
     }
 }
 
-pub fn push_event(obj: &Containable, ev: ExtEvent) -> bool
+#[derive(Debug, Clone)]
+pub enum ExtEvent
+{
+    MouseButton(u8, bool),
+}
+
+pub fn push_event(obj: &Containable, ev: &ExtEvent) -> bool
 {
     if obj.get_children().iter().map(|c| push_event(&**c, ev)).any(|a| a)
     {

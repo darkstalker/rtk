@@ -41,7 +41,7 @@ pub trait Container
 
 pub trait PushEvents
 {
-    fn push_event(&self, event: ExtEvent) -> bool;
+    fn push_event(&self, event: &ExtEvent) -> bool;
 }
 
 pub trait PullEvents

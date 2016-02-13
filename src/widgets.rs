@@ -51,7 +51,7 @@ impl Container for Label
 
 impl PushEvents for Label
 {
-    fn push_event(&self, event: ExtEvent) -> bool
+    fn push_event(&self, event: &ExtEvent) -> bool
     {
         (self.ev_handler)(self, event.into())
     }
