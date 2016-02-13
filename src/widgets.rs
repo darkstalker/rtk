@@ -1,4 +1,4 @@
-extern crate ref_slice;
+use ref_slice;
 use std::fmt;
 use traits::*;
 use data::{Property, EventCallback};

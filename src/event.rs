@@ -1,10 +1,13 @@
 use traits::*;
 
+pub use glium::glutin::Event as ExtEvent;
+pub use glium::glutin::{ElementState, MouseButton};
+
 #[derive(Debug, Clone, Copy)]
 pub enum Event<'a>
 {
     // push events
-    MouseButton(u8, bool),
+    MouseInput(ElementState, MouseButton),
     // pull events
     LabelChanged(&'a str),
     Resized(u32, u32),
@@ -15,15 +18,10 @@ impl<'a> From<&'a ExtEvent> for Event<'a>
     fn from(ev: &ExtEvent) -> Self
     {
         match *ev {
-            ExtEvent::MouseButton(b, p) => Event::MouseButton(b, p),
+            ExtEvent::MouseInput(st, b) => Event::MouseInput(st, b),
+            _ => unimplemented!()
         }
     }
-}
-
-#[derive(Debug, Clone)]
-pub enum ExtEvent
-{
-    MouseButton(u8, bool),
 }
 
 pub fn push_event(obj: &Containable, ev: &ExtEvent) -> bool
