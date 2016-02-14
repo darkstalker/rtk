@@ -9,7 +9,7 @@ pub struct Window
     label: Property<String>,
     size: Property<(u32, u32)>,
     ev_handler: EventCallback<Window>,
-    child: Option<Box<Containable>>,
+    child: Option<Box<Widget>>,
 }
 
 impl Window
@@ -32,44 +32,20 @@ impl fmt::Debug for Window
 
 impl Container for Window
 {
-    fn get_children(&self) -> &[Box<Containable>]
+    fn get_children(&self) -> &[Box<Widget>]
     {
         ref_slice::opt_slice(&self.child)
     }
 
-    fn get_children_mut(&mut self) -> &mut [Box<Containable>]
+    fn get_children_mut(&mut self) -> &mut [Box<Widget>]
     {
         ref_slice::mut_opt_slice(&mut self.child)
     }
 
     fn add<T>(&mut self, obj: T)
-        where T: Containable + 'static
+        where T: Widget + 'static
     {
         self.child = Some(Box::new(obj))
-    }
-}
-
-impl PushEvents for Window
-{
-    fn push_event(&self, event: &ExtEvent) -> bool
-    {
-        (self.ev_handler)(self, event.into())
-    }
-}
-
-impl PullEvents for Window
-{
-    fn pull_events(&mut self)
-    {
-        if self.label.consume_event()
-        {
-            (self.ev_handler)(self, Event::LabelChanged(self.label.get()));
-        }
-        if self.size.consume_event()
-        {
-            let (w, h) = *self.size.get();
-            (self.ev_handler)(self, Event::Resized(w, h));
-        }
     }
 }
 
@@ -101,6 +77,24 @@ impl HasSize for Window
 
 impl HasEvents for Window
 {
+    fn push_event(&self, event: &ExtEvent) -> bool
+    {
+        (self.ev_handler)(self, event.into())
+    }
+
+    fn pull_events(&mut self)
+    {
+        if self.label.consume_event()
+        {
+            (self.ev_handler)(self, Event::LabelChanged(self.label.get()));
+        }
+        if self.size.consume_event()
+        {
+            let (w, h) = *self.size.get();
+            (self.ev_handler)(self, Event::Resized(w, h));
+        }
+    }
+
     fn on_event<F>(&mut self, handler: F)
         where F: Fn(&Self, Event) -> bool + 'static
     {

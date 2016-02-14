@@ -24,7 +24,7 @@ impl<'a> From<&'a ExtEvent> for Event<'a>
     }
 }
 
-pub fn push_event(obj: &Containable, ev: &ExtEvent) -> bool
+pub fn push_event(obj: &Widget, ev: &ExtEvent) -> bool
 {
     if obj.get_children().iter().map(|c| push_event(&**c, ev)).any(|a| a)
     {
@@ -34,7 +34,7 @@ pub fn push_event(obj: &Containable, ev: &ExtEvent) -> bool
     obj.push_event(ev)
 }
 
-pub fn pull_events(obj: &mut Containable)
+pub fn pull_events(obj: &mut Widget)
 {
     obj.pull_events();
     for c in obj.get_children_mut()
