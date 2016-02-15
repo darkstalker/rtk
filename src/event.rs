@@ -7,10 +7,10 @@ pub use glium::glutin::{ElementState, MouseButton, VirtualKeyCode, MouseScrollDe
 #[derive(Debug, Clone, Copy)]
 pub enum Event<'a>
 {
-    // shouldn't propagate: Resized, Moved, Awakened, Refresh
+    // shouldn't propagate: Resized, Moved, Closed, Awakened, Refresh
     Unused(&'a ExtEvent),
     // push events
-    WindowClosed,
+    //WindowClosed,
     DroppedFile(&'a PathBuf),
     ReceivedCharacter(char),
     WindowFocused(bool),
@@ -31,7 +31,7 @@ impl<'a> From<&'a ExtEvent> for Event<'a>
     fn from(ev: &'a ExtEvent) -> Self
     {
         match *ev {
-            ExtEvent::Closed => Event::WindowClosed,
+            //ExtEvent::Closed => Event::WindowClosed,
             ExtEvent::DroppedFile(ref p) => Event::DroppedFile(p),
             ExtEvent::ReceivedCharacter(c) => Event::ReceivedCharacter(c),
             ExtEvent::Focused(f) => Event::WindowFocused(f),

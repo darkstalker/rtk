@@ -50,7 +50,8 @@ impl Window
                     self.position.set((x, y));
                 },
                 ExtEvent::Closed => {
-                    if !self.push_event(&ev) { break }
+                    break;
+                    //if !self.push_event(&ev) { break }
                 },
                 ExtEvent::Awakened => (),
                 ExtEvent::Refresh => {
