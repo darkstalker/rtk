@@ -12,6 +12,21 @@ pub trait HasSize
     fn set_size(&mut self, width: u32, height: u32);
 }
 
+pub trait HasPosition
+{
+    fn get_position(&self) -> (i32, i32);
+    fn set_position(&mut self, x: i32, y: i32);
+}
+
+pub trait HasVisibility
+{
+    fn is_visible(&self) -> bool;
+    fn set_visible(&mut self, vis: bool);
+
+    fn show(&mut self) { self.set_visible(true) }
+    fn hide(&mut self) { self.set_visible(false) }
+}
+
 pub trait HasEvents
 {
     fn push_event(&self, event: &ExtEvent) -> bool;
@@ -23,7 +38,7 @@ pub trait HasEvents
 
 pub trait DrawContext
 {
-    fn draw_text(&mut self, text: &str);
+    fn clear(&mut self);
 }
 
 pub trait CanDraw
