@@ -50,9 +50,6 @@ pub trait Container
 {
     fn get_children(&self) -> &[Box<Widget>];
     fn get_children_mut(&mut self) -> &mut [Box<Widget>];
-
-    fn add<T>(&mut self, obj: T)
-        where T: Widget + 'static, Self: Sized;
 }
 
 pub trait Widget: HasEvents + Container + CanDraw {}

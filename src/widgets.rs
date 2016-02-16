@@ -34,6 +34,11 @@ impl Window
         Ok(window)
     }
 
+    pub fn add<T: Widget + 'static>(&mut self, obj: T)
+    {
+        self.child = Some(Box::new(obj))
+    }
+
     //TODO: decouple the loop from event processing
     pub fn event_loop(&mut self)
     {
@@ -83,12 +88,6 @@ impl Container for Window
     fn get_children_mut(&mut self) -> &mut [Box<Widget>]
     {
         ref_slice::mut_opt_slice(&mut self.child)
-    }
-
-    fn add<T>(&mut self, obj: T)
-        where T: Widget + 'static
-    {
-        self.child = Some(Box::new(obj))
     }
 }
 
