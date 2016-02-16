@@ -1,18 +1,19 @@
 use std::ops::Deref;
+use std::cell::Cell;
 use event::Event;
 
 #[derive(Debug, Clone)]
 pub struct Property<T>
 {
     value: T,
-    changed: bool,
+    changed: Cell<bool>,
 }
 
 impl<T> Property<T>
 {
     pub fn new(val: T) -> Property<T>
     {
-        Property{ value: val, changed: false }
+        Property{ value: val, changed: Cell::new(false) }
     }
 
     #[inline]
@@ -25,14 +26,14 @@ impl<T> Property<T>
     pub fn set(&mut self, val: T)
     {
         self.value = val;
-        self.changed = true;
+        self.changed.set(true);
     }
 
-    pub fn consume_event(&mut self) -> bool
+    pub fn consume_event(&self) -> bool
     {
-        if self.changed
+        if self.changed.get()
         {
-            self.changed = false;
+            self.changed.set(false);
             return true;
         }
         false

@@ -30,7 +30,7 @@ pub trait HasVisibility
 pub trait HasEvents
 {
     fn push_event(&self, event: &ExtEvent) -> bool;
-    fn pull_events(&mut self);
+    fn pull_events(&self);
 
     fn on_event<F>(&mut self, handler: F)
         where F: Fn(&Self, Event) -> bool + 'static, Self: Sized;

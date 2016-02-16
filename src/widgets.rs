@@ -63,7 +63,7 @@ impl Window
                 _ => { event::push_event(self, &ev); }
             }
 
-            //event::pull_events(self);
+            event::pull_events(self);
         }
     }
 }
@@ -127,7 +127,7 @@ impl HasEvents for Window
         (self.ev_handler)(self, event.into())
     }
 
-    fn pull_events(&mut self)
+    fn pull_events(&self)
     {
         if self.label.consume_event()
         {

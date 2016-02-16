@@ -56,11 +56,11 @@ pub fn push_event<T: Widget + ?Sized>(obj: &T, ev: &ExtEvent) -> bool
     obj.push_event(ev)
 }
 
-pub fn pull_events<T: Widget + ?Sized>(obj: &mut T)
+pub fn pull_events<T: Widget + ?Sized>(obj: &T)
 {
     obj.pull_events();
-    for c in obj.get_children_mut()
+    for c in obj.get_children()
     {
-        pull_events(&mut **c);
+        pull_events(&**c);
     }
 }
