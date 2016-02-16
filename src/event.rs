@@ -46,7 +46,7 @@ impl<'a> From<&'a ExtEvent> for Event<'a>
     }
 }
 
-pub fn push_event<T: Widget + ?Sized>(obj: &T, ev: &ExtEvent) -> bool
+pub fn push_event<T: HasEvents + Container + ?Sized>(obj: &T, ev: &ExtEvent) -> bool
 {
     if obj.get_children().iter().map(|c| push_event(&**c, ev)).any(|a| a)
     {
@@ -56,7 +56,7 @@ pub fn push_event<T: Widget + ?Sized>(obj: &T, ev: &ExtEvent) -> bool
     obj.push_event(ev)
 }
 
-pub fn pull_events<T: Widget + ?Sized>(obj: &T)
+pub fn pull_events<T: HasEvents + Container + ?Sized>(obj: &T)
 {
     obj.pull_events();
     for c in obj.get_children()
