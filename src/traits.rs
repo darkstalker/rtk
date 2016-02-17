@@ -29,7 +29,7 @@ pub trait HasVisibility
 
 pub trait HasEvents
 {
-    fn push_event(&self, event: &ExtEvent) -> bool;
+    fn push_event(&self, ev: Event) -> bool;
     fn pull_events(&self);
 
     fn on_event<F>(&mut self, handler: F)
@@ -52,5 +52,10 @@ pub trait Container
     fn get_children_mut(&mut self) -> &mut [Box<Widget>];
 }
 
-pub trait Widget: HasEvents + Container + CanDraw {}
-impl<T> Widget for T where T: HasEvents + Container + CanDraw {}
+pub trait TopLevel
+{
+    fn push_ext_event(&mut self, ext_ev: &ExtEvent) -> bool;
+}
+
+pub trait Widget: HasEvents + CanDraw {}
+impl<T> Widget for T where T: HasEvents + CanDraw {}

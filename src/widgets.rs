@@ -1,10 +1,14 @@
 use std::fmt;
+use std::thread;
+use std::time::Duration;
 use ref_slice;
 
 use traits::*;
 use data::{Property, EventCallback};
 use event::{self, Event, ExtEvent};
 use backend::{self, GliumWindow, GliumWindowError, GliumDrawContext};
+
+const EVENT_LOOP_DELAY: u64 = 1000 / 125;
 
 pub struct Window
 {
@@ -39,36 +43,24 @@ impl Window
         self.child = Some(Box::new(obj))
     }
 
-    //TODO: decouple the loop from event processing
     pub fn event_loop(&mut self)
     {
         self.show();
-        for ev in self.window.wait_events()
+
+        'a: loop
         {
-            match ev {
-                ExtEvent::Resized(w, h) => {
-                    println!("resized {} {}", w, h);
-                    self.size.set((w, h));
-                },
-                ExtEvent::Moved(x, y) => {
-                    println!("moved {} {}", x, y);
-                    self.position.set((x, y));
-                },
-                ExtEvent::Closed => {
-                    break;
-                    //if !self.push_event(&ev) { break }
-                },
-                ExtEvent::Awakened => (),
-                ExtEvent::Refresh => {
-                    //println!("refresh");
-                    let mut surface = self.window.draw();
-                    self.draw(&mut GliumDrawContext::new(&mut surface));
-                    surface.finish().unwrap();
-                },
-                _ => { event::push_event(self, &ev); }
+            let events: Vec<ExtEvent> = self.window.poll_events().collect();
+            if events.is_empty()
+            {
+                thread::sleep(Duration::from_millis(EVENT_LOOP_DELAY));
+                continue;
             }
 
-            event::pull_events(self);
+            for ev in events
+            {
+                if self.push_ext_event(&ev) { break 'a }
+                self.pull_events();
+            }
         }
     }
 }
@@ -119,11 +111,62 @@ impl HasSize for Window
     }
 }
 
+impl TopLevel for Window
+{
+    fn push_ext_event(&mut self, ext_ev: &ExtEvent) -> bool
+    {
+        match event::cast(ext_ev) {
+            // can propagate, pass to regular events
+            Some(ev) => {
+                self.push_event(ev);
+            },
+            // events that don't propagate
+            None => match *ext_ev {
+                ExtEvent::Resized(w, h) => {
+                    println!("resized {} {}", w, h);
+                    self.size.set((w, h));
+                },
+                ExtEvent::Moved(x, y) => {
+                    println!("moved {} {}", x, y);
+                    self.position.set((x, y));
+                },
+                ExtEvent::Refresh => {
+                    let mut surface = self.window.draw();
+                    self.draw(&mut GliumDrawContext::new(&mut surface));
+                    surface.finish().unwrap();
+                },
+                // pass directly to handler
+                ExtEvent::Focused(f) => {
+                    (self.ev_handler)(self, Event::WindowFocused(f));
+                },
+                ExtEvent::Suspended(s) => {
+                    (self.ev_handler)(self, Event::Suspended(s));
+                },
+                // this should be conditional, but it isn't atm
+                ExtEvent::Closed => {
+                    //return !(self.ev_handler)(self, Event::WindowClosing);
+                    return true;
+                },
+                _ => ()
+            },
+        }
+        false
+    }
+}
+
 impl HasEvents for Window
 {
-    fn push_event(&self, event: &ExtEvent) -> bool
+    fn push_event(&self, ev: Event) -> bool
     {
-        (self.ev_handler)(self, event.into())
+        if let Some(ref child) = self.child
+        {
+            if child.push_event(ev)
+            {
+                return true
+            }
+        }
+
+        (self.ev_handler)(self, ev)
     }
 
     fn pull_events(&self)
@@ -141,6 +184,11 @@ impl HasEvents for Window
         {
             let (x, y) = *self.position;
             (self.ev_handler)(self, Event::Moved(x, y));
+        }
+
+        if let Some(ref child) = self.child
+        {
+            child.pull_events();
         }
     }
 

@@ -1,5 +1,4 @@
 use std::path::PathBuf;
-use traits::*;
 
 pub use glium::glutin::Event as ExtEvent;
 pub use glium::glutin::{ElementState, MouseButton, VirtualKeyCode, MouseScrollDelta, Touch, TouchPhase};
@@ -7,60 +6,34 @@ pub use glium::glutin::{ElementState, MouseButton, VirtualKeyCode, MouseScrollDe
 #[derive(Debug, Clone, Copy)]
 pub enum Event<'a>
 {
-    // shouldn't propagate: Resized, Moved, Closed, Awakened, Refresh
-    Unused(&'a ExtEvent),
-    // push events
-    //WindowClosed,
-    DroppedFile(&'a PathBuf),
-    ReceivedCharacter(char),
-    WindowFocused(bool),
-    KeyboardInput(ElementState, u8, Option<VirtualKeyCode>),
+    // push events (external)
     MouseMoved(i32, i32),
     MouseWheel(MouseScrollDelta),
     MouseInput(ElementState, MouseButton),
-    Suspended(bool),
+    ReceivedCharacter(char),
+    KeyboardInput(ElementState, u8, Option<VirtualKeyCode>),
     Touch(Touch),
-    // pull events
+    DroppedFile(&'a PathBuf),
+    WindowFocused(bool),
+    WindowClosing,
+    Suspended(bool),
+    // pull events (from property changes)
     LabelChanged(&'a str),
     Resized(u32, u32),
     Moved(i32, i32),
 }
 
-impl<'a> From<&'a ExtEvent> for Event<'a>
+pub fn cast<'a>(from: &'a ExtEvent) -> Option<Event<'a>>
 {
-    fn from(ev: &'a ExtEvent) -> Self
-    {
-        match *ev {
-            //ExtEvent::Closed => Event::WindowClosed,
-            ExtEvent::DroppedFile(ref p) => Event::DroppedFile(p),
-            ExtEvent::ReceivedCharacter(c) => Event::ReceivedCharacter(c),
-            ExtEvent::Focused(f) => Event::WindowFocused(f),
-            ExtEvent::KeyboardInput(st, sc, kc) => Event::KeyboardInput(st, sc, kc),
-            ExtEvent::MouseMoved((x, y)) => Event::MouseMoved(x, y),
-            ExtEvent::MouseWheel(sd) => Event::MouseWheel(sd),
-            ExtEvent::MouseInput(st, b) => Event::MouseInput(st, b),
-            ExtEvent::Suspended(s) => Event::Suspended(s),
-            ExtEvent::Touch(t) => Event::Touch(t),
-            _ => Event::Unused(ev),
-        }
-    }
-}
-
-pub fn push_event<T: HasEvents + Container + ?Sized>(obj: &T, ev: &ExtEvent) -> bool
-{
-    if obj.get_children().iter().map(|c| push_event(&**c, ev)).any(|a| a)
-    {
-        return true
-    }
-
-    obj.push_event(ev)
-}
-
-pub fn pull_events<T: HasEvents + Container + ?Sized>(obj: &T)
-{
-    obj.pull_events();
-    for c in obj.get_children()
-    {
-        pull_events(&**c);
+    match *from {
+        ExtEvent::DroppedFile(ref p) => Some(Event::DroppedFile(p)),
+        ExtEvent::ReceivedCharacter(c) => Some(Event::ReceivedCharacter(c)),
+        ExtEvent::KeyboardInput(st, sc, kc) => Some(Event::KeyboardInput(st, sc, kc)),
+        ExtEvent::MouseMoved((x, y)) => Some(Event::MouseMoved(x, y)),
+        ExtEvent::MouseWheel(sd) => Some(Event::MouseWheel(sd)),
+        ExtEvent::MouseInput(st, b) => Some(Event::MouseInput(st, b)),
+        ExtEvent::Touch(t) => Some(Event::Touch(t)),
+        // shouldn't propagate: Resized, Moved, Closed, Focused, Awakened, Refresh, Suspended
+        _ => None
     }
 }
