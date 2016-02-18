@@ -51,5 +51,4 @@ pub trait TopLevel
     fn push_ext_event(&mut self, ext_ev: &ExtEvent) -> bool;
 }
 
-pub trait Widget: HasEvents + CanDraw {}
-impl<T> Widget for T where T: HasEvents + CanDraw {}
+pub trait Containable: HasEvents + CanDraw {}

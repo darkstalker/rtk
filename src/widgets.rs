@@ -18,7 +18,7 @@ pub struct Window<'a>
     position: Property<(i32, i32)>,
     visible: bool,
     ev_handler: EventCallback<'a, Window<'a>>,
-    child: Option<Box<Widget + 'a>>,
+    child: Option<Box<Containable + 'a>>,
     window: GliumWindow,
 }
 
@@ -39,7 +39,7 @@ impl<'a> Window<'a>
         Ok(window)
     }
 
-    pub fn add<T: Widget + 'a>(&mut self, obj: T)
+    pub fn add<T: Containable + 'a>(&mut self, obj: T)
     {
         self.child = Some(Box::new(obj))
     }
@@ -73,7 +73,7 @@ impl<'a> fmt::Debug for Window<'a>
 
 impl<'a> ops::Deref for Window<'a>
 {
-    type Target = [Box<Widget + 'a>];
+    type Target = [Box<Containable + 'a>];
 
     fn deref(&self) -> &Self::Target
     {
