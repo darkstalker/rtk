@@ -1,4 +1,5 @@
 use std::fmt;
+use std::ops;
 use std::thread;
 use std::time::Duration;
 use ref_slice;
@@ -70,14 +71,19 @@ impl<'a> fmt::Debug for Window<'a>
     debug_fmt!(Window, label, size);
 }
 
-impl<'a> Container<'a> for Window<'a>
+impl<'a> ops::Deref for Window<'a>
 {
-    fn get_children(&self) -> &[Box<Widget + 'a>]
+    type Target = [Box<Widget + 'a>];
+
+    fn deref(&self) -> &Self::Target
     {
         ref_slice::opt_slice(&self.child)
     }
+}
 
-    fn get_children_mut(&mut self) -> &mut [Box<Widget + 'a>]
+impl<'a> ops::DerefMut for Window<'a>
+{
+    fn deref_mut(&mut self) -> &mut Self::Target
     {
         ref_slice::mut_opt_slice(&mut self.child)
     }

@@ -46,12 +46,6 @@ pub trait CanDraw
     fn draw(&self, ctx: &mut DrawContext);
 }
 
-pub trait Container<'a>
-{
-    fn get_children(&self) -> &[Box<Widget + 'a>];
-    fn get_children_mut(&mut self) -> &mut [Box<Widget + 'a>];
-}
-
 pub trait TopLevel
 {
     fn push_ext_event(&mut self, ext_ev: &ExtEvent) -> bool;
