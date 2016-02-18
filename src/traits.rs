@@ -33,7 +33,7 @@ pub trait HasEvents
     fn pull_events(&self);
 
     fn on_event<F>(&mut self, handler: F)
-        where F: Fn(&Self, Event) -> bool + 'static, Self: Sized;
+        where F: Fn(&Self, Event) -> bool, Self: Sized;
 }
 
 pub trait DrawContext
@@ -46,10 +46,10 @@ pub trait CanDraw
     fn draw(&self, ctx: &mut DrawContext);
 }
 
-pub trait Container
+pub trait Container<'a>
 {
-    fn get_children(&self) -> &[Box<Widget>];
-    fn get_children_mut(&mut self) -> &mut [Box<Widget>];
+    fn get_children(&self) -> &[Box<Widget + 'a>];
+    fn get_children_mut(&mut self) -> &mut [Box<Widget + 'a>];
 }
 
 pub trait TopLevel

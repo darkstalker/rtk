@@ -59,20 +59,20 @@ impl<T> Default for Property<T> where T: Default
     }
 }
 
-pub struct EventCallback<T>(Box<Fn(&T, Event) -> bool>);
+pub struct EventCallback<'a, T>(Box<Fn(&T, Event) -> bool + 'a>);
 
-impl<T> EventCallback<T>
+impl<'a, T> EventCallback<'a, T>
 {
-    pub fn new<F>(f: F) -> EventCallback<T>
-        where F: Fn(&T, Event) -> bool + 'static
+    pub fn new<F>(f: F) -> Self
+        where F: Fn(&T, Event) -> bool + 'a
     {
         EventCallback(Box::new(f))
     }
 }
 
-impl<T> Deref for EventCallback<T>
+impl<'a, T> Deref for EventCallback<'a, T>
 {
-    type Target = Fn(&T, Event) -> bool;
+    type Target = Fn(&T, Event) -> bool + 'a;
 
     #[inline]
     fn deref(&self) -> &Self::Target
@@ -81,9 +81,9 @@ impl<T> Deref for EventCallback<T>
     }
 }
 
-impl<T> Default for EventCallback<T>
+impl<'a, T> Default for EventCallback<'a, T>
 {
-    fn default() -> EventCallback<T>
+    fn default() -> Self
     {
         EventCallback::new(|_, _| false)
     }

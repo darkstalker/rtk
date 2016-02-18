@@ -10,20 +10,20 @@ use backend::{self, GliumWindow, GliumWindowError, GliumDrawContext};
 
 const EVENT_LOOP_DELAY: u64 = 1000 / 125;
 
-pub struct Window
+pub struct Window<'a>
 {
     label: Property<String>,
     size: Property<(u32, u32)>,
     position: Property<(i32, i32)>,
     visible: bool,
-    ev_handler: EventCallback<Window>,
-    child: Option<Box<Widget>>,
+    ev_handler: EventCallback<'a, Window<'a>>,
+    child: Option<Box<Widget + 'a>>,
     window: GliumWindow,
 }
 
-impl Window
+impl<'a> Window<'a>
 {
-    pub fn new() -> Result<Window, GliumWindowError>
+    pub fn new() -> Result<Window<'a>, GliumWindowError>
     {
         let mut window = Window{
             label: Default::default(),
@@ -38,7 +38,7 @@ impl Window
         Ok(window)
     }
 
-    pub fn add<T: Widget + 'static>(&mut self, obj: T)
+    pub fn add<T: Widget + 'a>(&mut self, obj: T)
     {
         self.child = Some(Box::new(obj))
     }
@@ -47,7 +47,7 @@ impl Window
     {
         self.show();
 
-        'a: loop
+        'ev: loop
         {
             let events: Vec<ExtEvent> = self.window.poll_events().collect();
             if events.is_empty()
@@ -58,32 +58,32 @@ impl Window
 
             for ev in events
             {
-                if self.push_ext_event(&ev) { break 'a }
+                if self.push_ext_event(&ev) { break 'ev }
                 self.pull_events();
             }
         }
     }
 }
 
-impl fmt::Debug for Window
+impl<'a> fmt::Debug for Window<'a>
 {
     debug_fmt!(Window, label, size);
 }
 
-impl Container for Window
+impl<'a> Container<'a> for Window<'a>
 {
-    fn get_children(&self) -> &[Box<Widget>]
+    fn get_children(&self) -> &[Box<Widget + 'a>]
     {
         ref_slice::opt_slice(&self.child)
     }
 
-    fn get_children_mut(&mut self) -> &mut [Box<Widget>]
+    fn get_children_mut(&mut self) -> &mut [Box<Widget + 'a>]
     {
         ref_slice::mut_opt_slice(&mut self.child)
     }
 }
 
-impl HasLabel for Window
+impl<'a> HasLabel for Window<'a>
 {
     fn get_label(&self) -> &str
     {
@@ -97,7 +97,7 @@ impl HasLabel for Window
     }
 }
 
-impl HasSize for Window
+impl<'a> HasSize for Window<'a>
 {
     fn get_size(&self) -> (u32, u32)
     {
@@ -111,7 +111,7 @@ impl HasSize for Window
     }
 }
 
-impl TopLevel for Window
+impl<'a> TopLevel for Window<'a>
 {
     fn push_ext_event(&mut self, ext_ev: &ExtEvent) -> bool
     {
@@ -154,7 +154,7 @@ impl TopLevel for Window
     }
 }
 
-impl HasEvents for Window
+impl<'a> HasEvents for Window<'a>
 {
     fn push_event(&self, ev: Event) -> bool
     {
@@ -193,13 +193,13 @@ impl HasEvents for Window
     }
 
     fn on_event<F>(&mut self, handler: F)
-        where F: Fn(&Self, Event) -> bool + 'static
+        where F: Fn(&Self, Event) -> bool + 'a
     {
         self.ev_handler = EventCallback::new(handler);
     }
 }
 
-impl HasVisibility for Window
+impl<'a> HasVisibility for Window<'a>
 {
     fn is_visible(&self) -> bool
     {
@@ -217,7 +217,7 @@ impl HasVisibility for Window
     }
 }
 
-impl CanDraw for Window
+impl<'a> CanDraw for Window<'a>
 {
     fn draw(&self, ctx: &mut DrawContext)
     {
