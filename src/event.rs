@@ -6,7 +6,7 @@ pub use glium::glutin::{ElementState, MouseButton, VirtualKeyCode, MouseScrollDe
 #[derive(Debug, Clone, Copy)]
 pub enum Event<'a>
 {
-    // push events (external)
+    // external events
     MouseMoved(i32, i32),
     MouseWheel(MouseScrollDelta),
     MouseInput(ElementState, MouseButton),
@@ -17,8 +17,7 @@ pub enum Event<'a>
     WindowFocused(bool),
     WindowClosing,
     Suspended(bool),
-    // pull events (from property changes)
-    LabelChanged(&'a str),
+    // internal events (from property changes)
     Resized(u32, u32),
     Moved(i32, i32),
 }

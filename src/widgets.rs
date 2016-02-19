@@ -4,7 +4,7 @@ use std::time::Duration;
 use ref_slice;
 
 use traits::*;
-use data::{Property, EventCallback};
+use data::EventCallback;
 use event::{self, Event, ExtEvent};
 use backend::{self, GliumWindow, GliumWindowError, GliumDrawContext};
 
@@ -13,7 +13,6 @@ const EVENT_LOOP_DELAY: u64 = 1000 / 125;
 pub struct Window<'a>
 {
     window: GliumWindow,
-    label: Property<String>,
     visible: bool,
     ev_handler: EventCallback<'a, Window<'a>>,
     child: Option<Box<Containable + 'a>>,
@@ -25,13 +24,17 @@ impl<'a> Window<'a>
     {
         let mut window = Window{
             window: try!(backend::create_window()),
-            label: Default::default(),
             visible: false,
             ev_handler: Default::default(),
             child: None,
         };
-        window.set_label("Window");
+        window.set_title("Window");
         Ok(window)
+    }
+
+    pub fn set_title(&mut self, text: &str)
+    {
+        self.window.get_window().unwrap().set_title(text);
     }
 
     pub fn add<T: Containable + 'a>(&mut self, obj: T)
@@ -73,21 +76,6 @@ impl<'a> ops::DerefMut for Window<'a>
     fn deref_mut(&mut self) -> &mut Self::Target
     {
         ref_slice::mut_opt_slice(&mut self.child)
-    }
-}
-
-impl<'a> HasLabel for Window<'a>
-{
-    fn get_label(&self) -> &str
-    {
-        &self.label.get()
-    }
-
-    fn set_label(&mut self, text: &str)
-    {
-        self.window.get_window().unwrap().set_title(text);
-        self.label.set(text.to_owned());
-        (self.ev_handler)(self, Event::LabelChanged(&self.label));
     }
 }
 
