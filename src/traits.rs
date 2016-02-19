@@ -47,7 +47,7 @@ pub trait CanDraw
 
 pub trait TopLevel
 {
-    fn push_ext_event(&self, ext_ev: &ExtEvent) -> bool;
+    fn push_ext_event(&self, ext_ev: ExtEvent);
 }
 
 pub trait Containable: HasEvents + CanDraw {}

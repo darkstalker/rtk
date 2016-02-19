@@ -1,14 +1,10 @@
 use std::ops;
-use std::thread;
-use std::time::Duration;
 use ref_slice;
 
 use traits::*;
 use data::EventCallback;
 use event::{self, Event, ExtEvent};
 use backend::{self, GliumWindow, GliumWindowError, GliumDrawContext};
-
-const EVENT_LOOP_DELAY: u64 = 1000 / 125;
 
 pub struct Window<'a>
 {
@@ -42,21 +38,19 @@ impl<'a> Window<'a>
         self.child = Some(Box::new(obj))
     }
 
+    // there should be a single event loop for the entire app, but glium manages this
+    // per-window (in a wrong way), so we implement a single window event loop (for now)
     pub fn event_loop(&self)
     {
-        'ev: loop
+        for ev in self.window.wait_events()
         {
-            let events: Vec<ExtEvent> = self.window.poll_events().collect();
-            if events.is_empty()
+            if let ExtEvent::Closed = ev
             {
-                thread::sleep(Duration::from_millis(EVENT_LOOP_DELAY));
-                continue;
+                //if !(self.ev_handler)(self, Event::WindowClosing) { break }
+                break
             }
 
-            for ev in events
-            {
-                if self.push_ext_event(&ev) { break 'ev }
-            }
+            self.push_ext_event(ev);
         }
     }
 }
@@ -107,15 +101,15 @@ impl<'a> HasPosition for Window<'a>
 
 impl<'a> TopLevel for Window<'a>
 {
-    fn push_ext_event(&self, ext_ev: &ExtEvent) -> bool
+    fn push_ext_event(&self, ext_ev: ExtEvent)
     {
-        match event::cast(ext_ev) {
+        match event::cast(&ext_ev) {
             // can propagate, pass to regular events
             Some(ev) => {
                 self.push_event(ev);
             },
             // events that don't propagate
-            None => match *ext_ev {
+            None => match ext_ev {
                 ExtEvent::Resized(w, h) => {
                     (self.ev_handler)(self, Event::Resized(w, h));
                 },
@@ -133,15 +127,9 @@ impl<'a> TopLevel for Window<'a>
                 ExtEvent::Suspended(s) => {
                     (self.ev_handler)(self, Event::Suspended(s));
                 },
-                // this should be conditional, but it isn't atm
-                ExtEvent::Closed => {
-                    //return !(self.ev_handler)(self, Event::WindowClosing);
-                    return true;
-                },
                 _ => ()
             },
         }
-        false
     }
 }
 
