@@ -1,5 +1,6 @@
 extern crate rtk;
 use rtk::traits::*;
+use rtk::event::Event;
 use rtk::widgets::Window;
 
 fn main()
@@ -9,7 +10,14 @@ fn main()
     w.set_size(320, 240);
     w.on_event(|src, ev| {
         println!("{}: {:?}", src.get_label(), ev);
-        true
+        match ev {
+            Event::ReceivedCharacter(_) => {
+                println!("position: {:?} size: {:?}", src.get_position(), src.get_size());
+                true
+            },
+            _ => false
+        }
     });
+    w.show();
     w.event_loop();
 }

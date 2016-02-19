@@ -30,7 +30,6 @@ pub trait HasVisibility
 pub trait HasEvents
 {
     fn push_event(&self, ev: Event) -> bool;
-    fn pull_events(&self);
 
     fn on_event<F>(&mut self, handler: F)
         where F: Fn(&Self, Event) -> bool, Self: Sized;
@@ -48,7 +47,7 @@ pub trait CanDraw
 
 pub trait TopLevel
 {
-    fn push_ext_event(&mut self, ext_ev: &ExtEvent) -> bool;
+    fn push_ext_event(&self, ext_ev: &ExtEvent) -> bool;
 }
 
 pub trait Containable: HasEvents + CanDraw {}

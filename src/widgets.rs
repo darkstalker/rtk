@@ -1,4 +1,3 @@
-use std::fmt;
 use std::ops;
 use std::thread;
 use std::time::Duration;
@@ -13,13 +12,11 @@ const EVENT_LOOP_DELAY: u64 = 1000 / 125;
 
 pub struct Window<'a>
 {
+    window: GliumWindow,
     label: Property<String>,
-    size: Property<(u32, u32)>,
-    position: Property<(i32, i32)>,
     visible: bool,
     ev_handler: EventCallback<'a, Window<'a>>,
     child: Option<Box<Containable + 'a>>,
-    window: GliumWindow,
 }
 
 impl<'a> Window<'a>
@@ -27,13 +24,11 @@ impl<'a> Window<'a>
     pub fn new() -> Result<Window<'a>, GliumWindowError>
     {
         let mut window = Window{
+            window: try!(backend::create_window()),
             label: Default::default(),
-            size: Default::default(),
-            position: Default::default(),
             visible: false,
             ev_handler: Default::default(),
             child: None,
-            window: try!(backend::create_window())
         };
         window.set_label("Window");
         Ok(window)
@@ -44,10 +39,8 @@ impl<'a> Window<'a>
         self.child = Some(Box::new(obj))
     }
 
-    pub fn event_loop(&mut self)
+    pub fn event_loop(&self)
     {
-        self.show();
-
         'ev: loop
         {
             let events: Vec<ExtEvent> = self.window.poll_events().collect();
@@ -60,15 +53,9 @@ impl<'a> Window<'a>
             for ev in events
             {
                 if self.push_ext_event(&ev) { break 'ev }
-                self.pull_events();
             }
         }
     }
-}
-
-impl<'a> fmt::Debug for Window<'a>
-{
-    debug_fmt!(Window, label, size);
 }
 
 impl<'a> ops::Deref for Window<'a>
@@ -99,7 +86,8 @@ impl<'a> HasLabel for Window<'a>
     fn set_label(&mut self, text: &str)
     {
         self.window.get_window().unwrap().set_title(text);
-        self.label.set(text.to_owned())
+        self.label.set(text.to_owned());
+        (self.ev_handler)(self, Event::LabelChanged(&self.label));
     }
 }
 
@@ -107,19 +95,31 @@ impl<'a> HasSize for Window<'a>
 {
     fn get_size(&self) -> (u32, u32)
     {
-        *self.size.get()
+        self.window.get_window().unwrap().get_inner_size_pixels().unwrap_or((0,0))
     }
 
     fn set_size(&mut self, width: u32, height: u32)
     {
         self.window.get_window().unwrap().set_inner_size(width, height);
-        self.size.set((width, height))
+    }
+}
+
+impl<'a> HasPosition for Window<'a>
+{
+    fn get_position(&self) -> (i32, i32)
+    {
+        self.window.get_window().unwrap().get_position().unwrap_or((0, 0))
+    }
+
+    fn set_position(&mut self, x: i32, y: i32)
+    {
+        self.window.get_window().unwrap().set_position(x, y)
     }
 }
 
 impl<'a> TopLevel for Window<'a>
 {
-    fn push_ext_event(&mut self, ext_ev: &ExtEvent) -> bool
+    fn push_ext_event(&self, ext_ev: &ExtEvent) -> bool
     {
         match event::cast(ext_ev) {
             // can propagate, pass to regular events
@@ -129,19 +129,16 @@ impl<'a> TopLevel for Window<'a>
             // events that don't propagate
             None => match *ext_ev {
                 ExtEvent::Resized(w, h) => {
-                    println!("resized {} {}", w, h);
-                    self.size.set((w, h));
+                    (self.ev_handler)(self, Event::Resized(w, h));
                 },
                 ExtEvent::Moved(x, y) => {
-                    println!("moved {} {}", x, y);
-                    self.position.set((x, y));
+                    (self.ev_handler)(self, Event::Moved(x, y));
                 },
                 ExtEvent::Refresh => {
                     let mut surface = self.window.draw();
                     self.draw(&mut GliumDrawContext::new(&mut surface));
                     surface.finish().unwrap();
                 },
-                // pass directly to handler
                 ExtEvent::Focused(f) => {
                     (self.ev_handler)(self, Event::WindowFocused(f));
                 },
@@ -173,29 +170,6 @@ impl<'a> HasEvents for Window<'a>
         }
 
         (self.ev_handler)(self, ev)
-    }
-
-    fn pull_events(&self)
-    {
-        if self.label.consume_event()
-        {
-            (self.ev_handler)(self, Event::LabelChanged(&self.label));
-        }
-        if self.size.consume_event()
-        {
-            let (w, h) = *self.size;
-            (self.ev_handler)(self, Event::Resized(w, h));
-        }
-        if self.position.consume_event()
-        {
-            let (x, y) = *self.position;
-            (self.ev_handler)(self, Event::Moved(x, y));
-        }
-
-        if let Some(ref child) = self.child
-        {
-            child.pull_events();
-        }
     }
 
     fn on_event<F>(&mut self, handler: F)
