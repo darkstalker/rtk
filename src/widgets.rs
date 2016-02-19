@@ -103,32 +103,33 @@ impl<'a> TopLevel for Window<'a>
 {
     fn push_ext_event(&self, ext_ev: ExtEvent)
     {
-        match event::cast(&ext_ev) {
-            // can propagate, pass to regular events
-            Some(ev) => {
-                self.push_event(ev);
+        // can propagate, pass to regular events
+        if let Some(ev) = event::cast(&ext_ev)
+        {
+            self.push_event(ev);
+            return;
+        }
+
+        // events that don't propagate
+        match ext_ev {
+            ExtEvent::Resized(w, h) => {
+                (self.ev_handler)(self, Event::Resized(w, h));
             },
-            // events that don't propagate
-            None => match ext_ev {
-                ExtEvent::Resized(w, h) => {
-                    (self.ev_handler)(self, Event::Resized(w, h));
-                },
-                ExtEvent::Moved(x, y) => {
-                    (self.ev_handler)(self, Event::Moved(x, y));
-                },
-                ExtEvent::Refresh => {
-                    let mut surface = self.window.draw();
-                    self.draw(&mut GliumDrawContext::new(&mut surface));
-                    surface.finish().unwrap();
-                },
-                ExtEvent::Focused(f) => {
-                    (self.ev_handler)(self, Event::WindowFocused(f));
-                },
-                ExtEvent::Suspended(s) => {
-                    (self.ev_handler)(self, Event::Suspended(s));
-                },
-                _ => ()
+            ExtEvent::Moved(x, y) => {
+                (self.ev_handler)(self, Event::Moved(x, y));
             },
+            ExtEvent::Refresh => {
+                let mut surface = self.window.draw();
+                self.draw(&mut GliumDrawContext::new(&mut surface));
+                surface.finish().unwrap();
+            },
+            ExtEvent::Focused(f) => {
+                (self.ev_handler)(self, Event::WindowFocused(f));
+            },
+            ExtEvent::Suspended(s) => {
+                (self.ev_handler)(self, Event::Suspended(s));
+            },
+            _ => ()
         }
     }
 }
